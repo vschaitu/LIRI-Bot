@@ -17,6 +17,9 @@ var client = new Twitter(keys.twitter);
 var Spotify = require('node-spotify-api');
 var spotify = new Spotify(keys.spotify);
 
+// Get input request type from CLI argument
+var ipReqType = process.argv[2];
 
-
+// Get input Additonal input from CLI arguments
+var ipReqData = process.argv.slice(3).join(" ");
 
