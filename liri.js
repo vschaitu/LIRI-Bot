@@ -1,4 +1,3 @@
-// import { twitter, spotify } from "./keys";
 // add fs pkg required for wirting logs
 var fs = require("fs");
 
@@ -31,6 +30,7 @@ var ipReqData = process.argv.slice(3).join(" ");
 // log the input parameters
 writelog('Request Type: ' + ipReqType + ' Request Addtn Data: ' + ipReqData);
 
+// Check input fields
 switch (ipReqType) {
     case 'my-tweets':
         getMyTweets();
@@ -42,6 +42,10 @@ switch (ipReqType) {
         getSongInfo();
         break;
     case 'movie-this':
+        if (ipReqData == "") {
+            ipReqData = "Mr. Nobody"
+        };
+        getMovieInfo();
         break;
     case 'do-what-it-says':
         break;
@@ -85,6 +89,7 @@ function getMyTweets() {
     });
 }
 
+// Gets the track information and displays on bash & logs the response to .txt
 function getSongInfo() {
     spotify.search({ type: 'track', query: ipReqData })
         .then(function (response) {
@@ -110,3 +115,36 @@ function getSongInfo() {
             console.log(err);
         });
 }
+
+// gets movie info from IMDB hhtps request
+function getMovieInfo() {
+    var URL = "http://www.omdbapi.com/?t=" + ipReqData + "&y=&plot=short&apikey=trilogy";
+    request(URL, function (error, response, body) {
+        if (!error && response.statusCode === 200) {
+            // log the whole response from twitter 
+            writelog(JSON.stringify(body));
+            // display the movie info onto Bash
+            var resp = JSON.parse(body);
+            var rotRating = "";
+            resp.Ratings.forEach(element => {
+                if (element.Source == "Rotten Tomatoes") {
+                    rotRating = element.Value;
+                }
+            });
+            var showData = [
+                "*******************",
+                "Movie Title: " + resp.Title,
+                "Year: " + resp.Year,
+                "Director: " + resp.Director,
+                "IMDB Rating: " + resp.imdbRating,
+                "Rotten Tomatoes Rating: " + rotRating,
+                "Country of Origin: " + resp.Country,
+                "Language: " + resp.Language,
+                "Plot: " + resp.Plot,
+                "Actors: " + resp.Actors
+            ].join("\n");
+            console.log(showData);
+        }
+    });
+
+};
