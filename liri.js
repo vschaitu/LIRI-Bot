@@ -1,24 +1,24 @@
-// add fs pkg required for wirting logs
+// Add fs pkg required for wirting logs/read random.txt files
 var fs = require("fs");
 
-// add https npm request & object instance
+// Add https npm request & object instance
 var request = require('request');
 
 // Add package required to import env details
 require("dotenv").config();
 
-// get keys from keys.js file
+// Include/Import keys.js file
 var keys = require("./keys");
 
-// add twitter npm & object instance 
+// Add twitter npm & object instance 
 var Twitter = require('twitter');
 var client = new Twitter(keys.twitter);
 
-// add spotify npm & object instance 
+// Add spotify npm & object instance 
 var Spotify = require('node-spotify-api');
 var spotify = new Spotify(keys.spotify);
 
-// add moment npm to get timestamp for logging
+// Add moment npm to get timestamp for logging
 var moment = require('moment');
 
 // Get input request type from CLI argument
@@ -27,10 +27,10 @@ var ipReqType = process.argv[2];
 // Get input Additonal input from CLI arguments
 var ipReqData = process.argv.slice(3).join(" ");
 
-// log the input parameters
+// At start- log the input parameters received with timestamp 
 writelog('Request Type: ' + ipReqType + ' Request Addtn Data: ' + ipReqData);
 
-// Check input fields
+// Check input action code & call subsequent logic based on action code
 switch (ipReqType) {
     case 'my-tweets':
         getMyTweets();
@@ -48,9 +48,9 @@ switch (ipReqType) {
         getMovieInfo();
         break;
     case 'do-what-it-says':
+        doWhatItSays();
         break;
     default:
-        console.log(moment().format());
         console.log('********Invalid request!!!*********');
 }
 
@@ -63,7 +63,7 @@ function writelog(data) {
 
 }
 
-// gets 20 tweets from twitter npm , displays on terminal & logs
+// Gets 20 tweets from twitter npm , displays on terminal & logs
 function getMyTweets() {
     client.get('statuses/user_timeline', { screen_name: '@shanghaidaily', count: 20 }, function (error, tweets, response) {
         if (!error) {
@@ -107,7 +107,8 @@ function getSongInfo() {
                 "Track: " + resp.name,
                 "Artist(s): " + artists.join(', '),
                 "Preview link: " + resp.preview_url,
-                "Album: " + resp.album.name
+                "Album: " + resp.album.name,
+                "*******************"
             ].join("\n");
             console.log(showData);
         })
@@ -116,7 +117,7 @@ function getSongInfo() {
         });
 }
 
-// gets movie info from IMDB hhtps request
+// Gets movie info from OMDB hhtps request
 function getMovieInfo() {
     var URL = "http://www.omdbapi.com/?t=" + ipReqData + "&y=&plot=short&apikey=trilogy";
     request(URL, function (error, response, body) {
@@ -141,10 +142,27 @@ function getMovieInfo() {
                 "Country of Origin: " + resp.Country,
                 "Language: " + resp.Language,
                 "Plot: " + resp.Plot,
-                "Actors: " + resp.Actors
+                "Actors: " + resp.Actors,
+                "*******************",
             ].join("\n");
             console.log(showData);
         }
     });
 
 };
+
+// Reads the random txt and gets arguments and performs spoity search on track
+function doWhatItSays() {
+    //read the random.txt
+    fs.readFile("random.txt", "utf8", function (error, data) {
+        // If the code experiences any errors it will log the error to the console.
+        if (error) {
+            return console.log(error);
+        }
+        // split it by commas and fetch arguments
+        var dataArr = data.split(",");
+        ipReqData = dataArr[1];
+        // call spotify search
+        getSongInfo();
+    });
+}
