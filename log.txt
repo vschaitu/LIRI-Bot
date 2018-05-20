@@ -1,0 +1,3 @@
+----------------------------------- LOG FILE ----------------------------------
+2018-05-19T14:21:13-05:00 Request Type: undefined Request Addtn Data: 
+2018-05-19T14:22:35-05:00 Request Type: action Request Addtn Data: Additional Data
