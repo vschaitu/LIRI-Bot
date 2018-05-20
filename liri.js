@@ -33,10 +33,14 @@ writelog('Request Type: ' + ipReqType + ' Request Addtn Data: ' + ipReqData);
 
 switch (ipReqType) {
     case 'my-tweets':
-        getTweets();
+        getMyTweets();
         break;
     case 'spotify-this-song':
-        break
+        if (ipReqData == "") {
+            ipReqData = "The Sign Ace of Base"
+        };
+        getSongInfo();
+        break;
     case 'movie-this':
         break;
     case 'do-what-it-says':
@@ -46,7 +50,7 @@ switch (ipReqType) {
         console.log('********Invalid request!!!*********');
 }
 
-
+// logging data to log.txt - add timestamp & data 
 function writelog(data) {
     var logrec = '\n' + moment().format() + " " + data;
     fs.appendFile("log.txt", logrec, function (err) {
@@ -55,8 +59,54 @@ function writelog(data) {
 
 }
 
-function getTweets() {
-    client.get('search/tweets', { q: 'node.js' }, function (error, tweets, response) {
-        console.log(tweets);
+// gets 20 tweets from twitter npm , displays on terminal & logs
+function getMyTweets() {
+    client.get('statuses/user_timeline', { screen_name: '@shanghaidaily', count: 20 }, function (error, tweets, response) {
+        if (!error) {
+            // log the whole response from twitter 
+            var resp = JSON.stringify(tweets);
+            writelog(resp);
+            // display the resuls on bash
+            var showData;
+            tweets.forEach(element => {
+                showData = [
+                    "******************",
+                    "Tweet By: " + element.user.name,
+                    "Tweet: " + element.text,
+                    "Created at: " + element.created_at,
+                    "Favourite Count: " + element.favorite_count
+                ].join("\n");
+                console.log(showData);
+            });
+
+        } else {
+            throw error
+        }
     });
+}
+
+function getSongInfo() {
+    spotify.search({ type: 'track', query: ipReqData })
+        .then(function (response) {
+            // log the whole response from twitter 
+            var resp = JSON.stringify(response);
+            writelog(resp);
+            // display the first search returned item onto bash
+            var resp = response.tracks.items[0];
+            var artists = [];
+            resp.artists.forEach(element => {
+                artists.push(element.name)
+            });
+            var showData = [
+                "*******************",
+                "Track: " + resp.name,
+                "Artist(s): " + artists.join(', '),
+                "Preview link: " + resp.preview_url,
+                "Album: " + resp.album.name
+            ].join("\n");
+            console.log(showData);
+        })
+        .catch(function (err) {
+            console.log(err);
+        });
 }
